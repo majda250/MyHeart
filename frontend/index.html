@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyHeart — Système de Gestion de Soins de Santé</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">❤️</div>
+    <h1>My<span>Heart</span></h1>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+      <span class="nav-icon">🏠</span><span>Tableau de bord</span>
+    </button>
+    <div class="nav-section-label">Microservices</div>
+    <button class="nav-item" data-page="patients" onclick="navigate('patients')">
+      <span class="nav-icon">👤</span><span>Patients</span>
+    </button>
+    <button class="nav-item" data-page="appointments" onclick="navigate('appointments')">
+      <span class="nav-icon">📅</span><span>Rendez-vous</span>
+    </button>
+    <button class="nav-item" data-page="billing" onclick="navigate('billing')">
+      <span class="nav-icon">💰</span><span>Facturation</span>
+    </button>
+    <button class="nav-item" data-page="prescriptions" onclick="navigate('prescriptions')">
+      <span class="nav-icon">💊</span><span>Prescriptions</span>
+    </button>
+    <button class="nav-item" data-page="lab" onclick="navigate('lab')">
+      <span class="nav-icon">🔬</span><span>Laboratoire</span>
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="service-status">
+      <div class="status-dot"></div>
+      <span>5 microservices actifs</span>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div id="page-title" class="topbar-title">Tableau de Bord</div>
+    <div class="topbar-actions">
+      <span style="font-size:13px; color: var(--text-muted);">Bienvenue dans MyHeart 🏥</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page">
+      <div class="page-header">
+        <div><h2>Tableau de Bord</h2><p>Vue d'ensemble du système MyHeart</p></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" onclick="navigate('patients')" style="cursor:pointer">
+          <div class="stat-icon blue">👤</div>
+          <div class="stat-info"><h4 id="dash-patients">…</h4><p>Patients enregistrés</p></div>
+        </div>
+        <div class="stat-card" onclick="navigate('appointments')" style="cursor:pointer">
+          <div class="stat-icon green">📅</div>
+          <div class="stat-info"><h4 id="dash-appointments">…</h4><p>Rendez-vous</p></div>
+        </div>
+        <div class="stat-card" onclick="navigate('billing')" style="cursor:pointer">
+          <div class="stat-icon orange">💰</div>
+          <div class="stat-info"><h4 id="dash-bills">…</h4><p>Factures en attente</p></div>
+        </div>
+        <div class="stat-card" onclick="navigate('prescriptions')" style="cursor:pointer">
+          <div class="stat-icon purple">💊</div>
+          <div class="stat-info"><h4 id="dash-prescriptions">…</h4><p>Prescriptions</p></div>
+        </div>
+        <div class="stat-card" onclick="navigate('lab')" style="cursor:pointer">
+          <div class="stat-icon red">🔬</div>
+          <div class="stat-info"><h4 id="dash-labs">…</h4><p>Rapports de labo</p></div>
+        </div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header"><h3>🕒 Activité récente — Rendez-vous</h3></div>
+          <div class="card-body">
+            <ul class="activity-list" id="recent-activity">
+              <li class="activity-item"><div class="loading"><div class="spinner"></div></div></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>📡 État des microservices</h3></div>
+          <div class="card-body">
+            <div class="health-grid">
+              <div class="health-item" id="h-patient"><div class="h-dot checking"></div><span>Patients</span></div>
+              <div class="health-item" id="h-appointment"><div class="h-dot checking"></div><span>Rendez-vous</span></div>
+              <div class="health-item" id="h-billing"><div class="h-dot checking"></div><span>Facturation</span></div>
+              <div class="health-item" id="h-prescription"><div class="h-dot checking"></div><span>Prescriptions</span></div>
+              <div class="health-item" id="h-lab"><div class="h-dot checking"></div><span>Laboratoire</span></div>
+            </div>
+            <br/>
+            <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:13px;color:var(--text-muted);">
+              <strong>Architecture REST synchrone</strong><br/>
+              Appointment → Billing (génération automatique de facture)<br/>
+              Appointment → Patient (vérification du patient)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATIENTS -->
+    <div id="page-patients" class="page" style="display:none">
+      <div class="page-header">
+        <div><h2>Patients</h2><p>Gestion des dossiers patients</p></div>
+        <button class="btn btn-primary" onclick="openAddPatient()">+ Nouveau patient</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Liste des patients</h3>
+          <input class="search-input" id="patient-search" placeholder="🔍 Rechercher..." oninput="if(window._patients) renderPatients(window._patients)" style="width:240px" />
+        </div>
+        <div id="patients-list" class="card-body">
+          <div class="loading"><div class="spinner"></div> Chargement...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div id="page-appointments" class="page" style="display:none">
+      <div class="page-header">
+        <div><h2>Rendez-vous</h2><p>Planification et suivi des consultations</p></div>
+        <button class="btn btn-primary" onclick="openAddAppointment()">+ Nouveau rendez-vous</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Liste des rendez-vous</h3></div>
+        <div id="appointments-list" class="card-body">
+          <div class="loading"><div class="spinner"></div> Chargement...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="page-billing" class="page" style="display:none">
+      <div class="page-header">
+        <div><h2>Facturation</h2><p>Gestion des factures et paiements</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-bill')">+ Nouvelle facture</button>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-icon blue">📋</div><div class="stat-info"><h4 id="bill-stat-total">—</h4><p>Total factures</p></div></div>
+        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><h4 id="bill-stat-paid">—</h4><p>Payées</p></div></div>
+        <div class="stat-card"><div class="stat-icon orange">⏳</div><div class="stat-info"><h4 id="bill-stat-pending">—</h4><p>En attente</p></div></div>
+        <div class="stat-card"><div class="stat-icon green">💵</div><div class="stat-info"><h4 id="bill-stat-amount">—</h4><p>Revenus encaissés</p></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Liste des factures</h3></div>
+        <div id="billing-list" class="card-body">
+          <div class="loading"><div class="spinner"></div> Chargement...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESCRIPTIONS -->
+    <div id="page-prescriptions" class="page" style="display:none">
+      <div class="page-header">
+        <div><h2>Prescriptions</h2><p>Gestion des ordonnances médicales</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-prescription')">+ Nouvelle prescription</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Liste des prescriptions</h3></div>
+        <div id="prescriptions-list" class="card-body">
+          <div class="loading"><div class="spinner"></div> Chargement...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAB -->
+    <div id="page-lab" class="page" style="display:none">
+      <div class="page-header">
+        <div><h2>Laboratoire</h2><p>Rapports et analyses biologiques</p></div>
+        <button class="btn btn-primary" onclick="openModal('modal-lab')">+ Nouveau rapport</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Rapports de laboratoire</h3></div>
+        <div id="lab-list" class="card-body">
+          <div class="loading"><div class="spinner"></div> Chargement...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL PATIENT -->
+<div class="modal-overlay" id="modal-patient">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-patient-title">Nouveau patient</h3>
+      <button class="modal-close" onclick="closeModal('modal-patient')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="patient-form">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Prénom *</label><input class="form-control" name="firstName" required /></div>
+          <div class="form-group"><label class="form-label">Nom *</label><input class="form-control" name="lastName" required /></div>
+          <div class="form-group"><label class="form-label">Date de naissance *</label><input class="form-control" name="dateOfBirth" type="date" required /></div>
+          <div class="form-group"><label class="form-label">Genre *</label>
+            <select class="form-control" name="gender" required>
+              <option value="">-- Choisir --</option>
+              <option>Homme</option><option>Femme</option><option>Autre</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Email *</label><input class="form-control" name="email" type="email" required /></div>
+          <div class="form-group"><label class="form-label">Téléphone *</label><input class="form-control" name="phone" required /></div>
+          <div class="form-group"><label class="form-label">Groupe sanguin</label>
+            <select class="form-control" name="bloodType">
+              <option value="">—</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Adresse</label><input class="form-control" name="address" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Allergies (séparées par virgule)</label><input class="form-control" name="allergies" /></div>
+        <div class="form-group"><label class="form-label">Antécédents médicaux (séparés par virgule)</label><input class="form-control" name="medicalHistory" /></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-patient')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePatient()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL APPOINTMENT -->
+<div class="modal-overlay" id="modal-appointment">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-appointment-title">Nouveau rendez-vous</h3>
+      <button class="modal-close" onclick="closeModal('modal-appointment')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="appointment-form">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ID Patient *</label><input class="form-control" name="patientId" required /></div>
+          <div class="form-group"><label class="form-label">Nom du patient</label><input class="form-control" name="patientName" /></div>
+          <div class="form-group"><label class="form-label">Médecin *</label><input class="form-control" name="doctorName" required /></div>
+          <div class="form-group"><label class="form-label">Spécialité *</label>
+            <select class="form-control" name="specialty" required>
+              <option value="">-- Choisir --</option>
+              <option>Médecine générale</option><option>Cardiologie</option><option>Pédiatrie</option>
+              <option>Dermatologie</option><option>Neurologie</option><option>Orthopédie</option>
+              <option>Gynécologie</option><option>Ophtalmologie</option><option>Psychiatrie</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Date *</label><input class="form-control" name="date" type="date" required /></div>
+          <div class="form-group"><label class="form-label">Heure *</label><input class="form-control" name="time" type="time" required /></div>
+          <div class="form-group"><label class="form-label">Statut</label>
+            <select class="form-control" name="status">
+              <option>Planifié</option><option>Confirmé</option><option>Terminé</option><option>Annulé</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Motif</label><input class="form-control" name="reason" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
+        <div style="background:#e8f8f5;border-radius:8px;padding:10px 14px;font-size:13px;color:#00b894;margin-top:8px;">
+          💡 Une facture sera automatiquement générée lors de la création du rendez-vous.
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-appointment')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAppointment()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BILL -->
+<div class="modal-overlay" id="modal-bill">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouvelle facture manuelle</h3>
+      <button class="modal-close" onclick="closeModal('modal-bill')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="bill-form">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ID Patient *</label><input class="form-control" name="patientId" required /></div>
+          <div class="form-group"><label class="form-label">Nom du patient</label><input class="form-control" name="patientName" /></div>
+          <div class="form-group"><label class="form-label">Médecin</label><input class="form-control" name="doctorName" /></div>
+          <div class="form-group"><label class="form-label">Montant (MAD) *</label><input class="form-control" name="amount" type="number" min="0" required /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Description *</label><input class="form-control" name="description" required /></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-bill')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveBill()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRESCRIPTION -->
+<div class="modal-overlay" id="modal-prescription">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <h3>Nouvelle prescription</h3>
+      <button class="modal-close" onclick="closeModal('modal-prescription')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="prescription-form">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ID Patient *</label><input class="form-control" name="patientId" required /></div>
+          <div class="form-group"><label class="form-label">Nom du patient</label><input class="form-control" name="patientName" /></div>
+          <div class="form-group"><label class="form-label">Médecin *</label><input class="form-control" name="doctorName" required /></div>
+          <div class="form-group"><label class="form-label">Spécialité</label><input class="form-control" name="specialty" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">Diagnostic *</label><input class="form-control" name="diagnosis" required /></div>
+        <div class="form-group">
+          <label class="form-label">Médicaments</label>
+          <div id="med-list">
+            <div class="med-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+              <input class="form-control" name="medName" placeholder="Médicament" />
+              <input class="form-control" name="medDosage" placeholder="Dose" />
+              <input class="form-control" name="medFreq" placeholder="Fréquence" />
+              <input class="form-control" name="medDuration" placeholder="Durée" />
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="addMedRow()">+ Ajouter médicament</button>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-prescription')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePrescription()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LAB -->
+<div class="modal-overlay" id="modal-lab">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nouveau rapport de laboratoire</h3>
+      <button class="modal-close" onclick="closeModal('modal-lab')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="lab-form">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ID Patient *</label><input class="form-control" name="patientId" required /></div>
+          <div class="form-group"><label class="form-label">Nom du patient</label><input class="form-control" name="patientName" /></div>
+          <div class="form-group"><label class="form-label">Médecin prescripteur *</label><input class="form-control" name="doctorName" required /></div>
+          <div class="form-group"><label class="form-label">Type d'analyse *</label>
+            <select class="form-control" name="testType" required>
+              <option value="">-- Choisir --</option>
+              <option>Numération Formule Sanguine (NFS)</option>
+              <option>Bilan lipidique</option><option>Bilan hépatique</option>
+              <option>Glycémie à jeun</option><option>HbA1c</option>
+              <option>Créatinine</option><option>TSH / T4</option>
+              <option>ECG</option><option>Radiographie</option>
+              <option>IRM / Scanner</option><option>Analyse d'urine</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Technicien de labo</label><input class="form-control" name="labTechnician" /></div>
+          <div class="form-group"><label class="form-label">Priorité</label>
+            <select class="form-control" name="priority">
+              <option>Normal</option><option>Urgent</option><option>Critique</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Résumé / Observations</label><textarea class="form-control" name="summary" rows="3"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-lab')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveLabReport()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/api.js"></script>
+<script src="js/patients.js"></script>
+<script src="js/modules.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+  function addMedRow() {
+    const row = document.createElement('div');
+    row.className = 'med-row';
+    row.style = 'display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;';
+    row.innerHTML = `
+      <input class="form-control" name="medName" placeholder="Médicament" />
+      <input class="form-control" name="medDosage" placeholder="Dose" />
+      <input class="form-control" name="medFreq" placeholder="Fréquence" />
+      <input class="form-control" name="medDuration" placeholder="Durée" />
+    `;
+    document.getElementById('med-list').appendChild(row);
+  }
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
+  navigate('dashboard');
+</script>
+</body>
+</html>

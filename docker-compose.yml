@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+
+  # ============ DATABASES ============
+
+  mongo-patient:
+    image: mongo:6
+    container_name: mongo-patient
+    restart: unless-stopped
+    volumes:
+      - mongo-patient-data:/data/db
+    networks:
+      - myheart-net
+
+  mongo-appointment:
+    image: mongo:6
+    container_name: mongo-appointment
+    restart: unless-stopped
+    volumes:
+      - mongo-appointment-data:/data/db
+    networks:
+      - myheart-net
+
+  mongo-billing:
+    image: mongo:6
+    container_name: mongo-billing
+    restart: unless-stopped
+    volumes:
+      - mongo-billing-data:/data/db
+    networks:
+      - myheart-net
+
+  mongo-prescription:
+    image: mongo:6
+    container_name: mongo-prescription
+    restart: unless-stopped
+    volumes:
+      - mongo-prescription-data:/data/db
+    networks:
+      - myheart-net
+
+  mongo-lab:
+    image: mongo:6
+    container_name: mongo-lab
+    restart: unless-stopped
+    volumes:
+      - mongo-lab-data:/data/db
+    networks:
+      - myheart-net
+
+  # ============ MICROSERVICES ============
+
+  patient-service:
+    build: ./patient-service
+    container_name: patient-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo-patient:27017/patientdb
+    depends_on:
+      - mongo-patient
+    networks:
+      - myheart-net
+
+  appointment-service:
+    build: ./appointment-service
+    container_name: appointment-service
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongo-appointment:27017/appointmentdb
+      - PATIENT_SERVICE_URL=http://patient-service:3001
+      - BILLING_SERVICE_URL=http://billing-service:3003
+    depends_on:
+      - mongo-appointment
+      - patient-service
+      - billing-service
+    networks:
+      - myheart-net
+
+  billing-service:
+    build: ./billing-service
+    container_name: billing-service
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongo-billing:27017/billingdb
+    depends_on:
+      - mongo-billing
+    networks:
+      - myheart-net
+
+  prescription-service:
+    build: ./prescription-service
+    container_name: prescription-service
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://mongo-prescription:27017/prescriptiondb
+    depends_on:
+      - mongo-prescription
+    networks:
+      - myheart-net
+
+  lab-service:
+    build: ./lab-service
+    container_name: lab-service
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - MONGO_URI=mongodb://mongo-lab:27017/labdb
+    depends_on:
+      - mongo-lab
+    networks:
+      - myheart-net
+
+  # ============ FRONTEND ============
+
+  frontend:
+    build: ./frontend
+    container_name: myheart-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - patient-service
+      - appointment-service
+      - billing-service
+      - prescription-service
+      - lab-service
+    networks:
+      - myheart-net
+
+# ============ VOLUMES ============
+volumes:
+  mongo-patient-data:
+  mongo-appointment-data:
+  mongo-billing-data:
+  mongo-prescription-data:
+  mongo-lab-data:
+
+# ============ NETWORK ============
+networks:
+  myheart-net:
+    driver: bridge
